@@ -23,7 +23,6 @@
     "scripts": {
         "start": "./scripts/start.js",
         "start:docker": "./scripts/start-docker.js",
-        "prebuild": "./scripts/prebuild.sh",
         "build": "tsc -b tsconfig.build.json",
         "build:docker": "docker-compose build discord-crossposter",
         "typecheck": "tsc -p tsconfig.json --noEmit",
