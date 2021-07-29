@@ -1,0 +1,14 @@
+{
+    "extends": "./tsconfig.base.json",
+    "compilerOptions": {
+        "incremental": true,
+        "rootDir": ".",
+        "outDir": "build"
+    },
+    "include": ["./src/**/*"],
+    "exclude": [
+        "./src/**/*.test.ts",
+        "./src/**/*.spec.ts",
+        "./src/**/__tests__/**/*.ts",
+    ]
+}
