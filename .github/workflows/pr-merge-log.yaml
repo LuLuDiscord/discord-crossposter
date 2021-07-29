@@ -1,0 +1,36 @@
+name: pr-merge-log
+on:
+    pull_request:
+
+jobs:
+    update-merge-log:
+        runs-on: ubuntu-20.04
+        steps:
+            - name: Checkout Pull Request
+              uses: actions/checkout@v2
+              with:
+                  repository: ${{ github.repository }}
+                  ref: 'refs/pull/${{ github.event.pull_request.number }}/merge'
+                  fetch-depth: 0
+
+            - name: Git Log
+              id: log
+              run: |
+                  # Download the branch we are merging into
+                  git fetch origin $GITHUB_BASE_REF
+                  # Get the log of commits from the commit we will merge into, up to HEAD
+                  LOG=`git log --format="%an %h %s" --no-merges --reverse $GITHUB_BASE_SHA..$GITHUB_HEAD_SHA`
+                  LOG="${LOG//'%'/'%25'}"
+                  LOG="${LOG//$'\n'/'%0A'}"
+                  LOG="${LOG//$'\r'/'%0D'}"
+                  echo "::set-output name=log::$LOG"
+              env:
+                  GITHUB_BASE_REF: ${{ github.event.pull_request.base.ref }}
+                  GITHUB_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+                  GITHUB_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+
+            - name: Update Pull Request
+              uses: riskledger/update-pr-description@v2
+              with:
+                  body: ${{ steps.log.outputs.log }}
+                  token: ${{ secrets.GITHUB_TOKEN }}
