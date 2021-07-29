@@ -1,0 +1,7 @@
+node_modules
+build
+coverage
+.vscode
+.husky
+.github
+.git
