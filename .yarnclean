@@ -51,7 +51,6 @@ tsconfig*.json
 *.jpeg
 *.jpg
 *.gif
-*.txt
 *.md
 
 # license
