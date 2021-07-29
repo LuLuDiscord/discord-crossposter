@@ -123,11 +123,14 @@ jobs:
                   password: ${{ secrets.GITHUB_TOKEN }}
 
             - name: Get Docker Repository Name
-              run: echo ::set-env name=IMAGE_REPOSITORY::$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]')
+              id: repository
+              run: echo ::set-output name=lowercase::$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]')
 
             - name: Push Docker Image
               if: github.ref == 'refs/heads/main'
               run: |
-                  docker tag ${DOCKER_IMAGE} ghcr.io/${{ env.IMAGE_REPOSITORY }}/${DOCKER_IMAGE}:latest
-                  docker tag ${DOCKER_IMAGE} ghcr.io/${{ env.IMAGE_REPOSITORY }}/${DOCKER_IMAGE}:${{ github.sha }}
-                  docker image push --all-tags ghcr.io/${{ env.IMAGE_REPOSITORY }}/${DOCKER_IMAGE}
+                  docker tag ${DOCKER_IMAGE} ghcr.io/${REPOSITORY}/${DOCKER_IMAGE}:latest
+                  docker tag ${DOCKER_IMAGE} ghcr.io/${REPOSITORY}/${DOCKER_IMAGE}:${{ github.sha }}
+                  docker image push --all-tags ghcr.io/${REPOSITORY}/${DOCKER_IMAGE}
+              env:
+                  REPOSITORY: ${{ steps.repository.outputs.lowercase }}
