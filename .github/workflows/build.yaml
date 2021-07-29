@@ -1,0 +1,130 @@
+name: build
+on:
+    push:
+        branches:
+            - master
+        paths:
+            # Package
+            - src/**
+            # Workflow
+            - .github/workflows/build.yaml
+            # Docker
+            - .dockerignore
+            - Dockerfile
+            # TypeScript
+            - tsconfig*
+              # Dependencies
+            - package.json
+            - yarn.lock
+    pull_request:
+        paths:
+            # Package
+            - src/**
+            # Workflow
+            - .github/workflows/build.yaml
+            # Docker
+            - .dockerignore
+            - Dockerfile
+            # TypeScript
+            - tsconfig*
+            # Dependencies
+            - package.json
+            - yarn.lock
+
+env:
+    DOCKER_IMAGE: 'lulu/discord-crossposter'
+    BUILD_CACHE: /home/runner/.docker/buildkit
+
+jobs:
+    build:
+        runs-on: ubuntu-20.04
+        steps:
+            - name: Checkout Latest Commit
+              uses: actions/checkout@v2
+              with:
+                  submodules: recursive
+                  fetch-depth: 2
+
+            - name: Download Docker Build Cache
+              uses: actions/cache@v2
+              with:
+                  key: ${{ runner.os }}-${{ hashFiles('Dockerfile') }}
+                  path: ${{ env.BUILD_CACHE }}
+
+            - name: Build Docker (Development Target)
+              run: |
+                  if [ $GITHUB_BASE_REF ]; then
+                      # Pull Request
+                      export TITLE="${{ github.event.pull_request.title }}"
+                  else
+                      # Push
+                      export TITLE="${{ github.event.head_commit.message }}"
+                  fi
+
+                  docker buildx create --use
+                  docker buildx build . \
+                      -t ${DOCKER_IMAGE}-development \
+                      --target development \
+                      --build-arg GIT_COMMIT_SHA="$(git show -s --format=%H HEAD)" \
+                      --build-arg GIT_COMMIT_AUTHOR="$(git show -s --format=%an HEAD)" \
+                      --build-arg GIT_COMMIT_DATE="$(git show -s --format=%cI)" \
+                      --build-arg GIT_COMMIT_TITLE="${TITLE}" \
+                      --cache-to type=local,dest=${BUILD_CACHE},mode=max \
+                      --cache-from type=local,src=${BUILD_CACHE} \
+                      --output=type=docker
+
+            - name: Run Typecheck
+              run: |
+                  docker run \
+                    --entrypoint "/bin/bash" \
+                    ${DOCKER_IMAGE}-development \
+                    -c "yarn typecheck"
+
+            - name: Run Linting
+              run: |
+                  docker run \
+                    --entrypoint "/bin/bash" \
+                    ${DOCKER_IMAGE}-development \
+                    -c 'yarn lint --rule "$(jq -s 'add' ./eslint/std-overrides.json ./eslint/ci-overrides.json)"'
+
+            - name: Run Tests
+              run: |
+                  docker run \
+                    --entrypoint "/bin/bash" \
+                    ${DOCKER_IMAGE}-development \
+                    -c "yarn test"
+
+            - name: Build Docker (Production Target)
+              run: |
+                  if [ $GITHUB_BASE_REF ]; then
+                      # Pull Request
+                      export TITLE="${{ github.event.pull_request.title }}"
+                  else
+                      # Push
+                      export TITLE="${{ github.event.head_commit.message }}"
+                  fi
+
+                  docker buildx build . \
+                      -t ${DOCKER_IMAGE} \
+                      --build-arg GIT_COMMIT_SHA="$(git show -s --format=%H HEAD)" \
+                      --build-arg GIT_COMMIT_AUTHOR="$(git show -s --format=%an HEAD)" \
+                      --build-arg GIT_COMMIT_DATE="$(git show -s --format=%cI)" \
+                      --build-arg GIT_COMMIT_TITLE="${TITLE}" \
+                      --cache-to type=local,dest=${BUILD_CACHE},mode=max \
+                      --cache-from type=local,src=${BUILD_CACHE} \
+                      --output=type=docker
+
+            - name: Login to GitHub Container Registry
+              uses: docker/login-action@f054a8b539a109f9f41c372932f1ae047eff08c9
+              if: github.ref == 'refs/heads/master'
+              with:
+                  registry: ghcr.io
+                  username: ${{ github.actor }}
+                  password: ${{ secrets.GITHUB_TOKEN }}
+
+            - name: Push Docker Image
+              if: github.ref == 'refs/heads/master'
+              run: |
+                  docker tag ${DOCKER_IMAGE} ghcr.io/${{ github.repository }}/${DOCKER_IMAGE}:latest
+                  docker tag ${DOCKER_IMAGE} ghcr.io/${{ github.repository }}/${DOCKER_IMAGE}:${{ github.sha }}
+                  docker image push --all-tags ghcr.io/${{ github.repository }}/${DOCKER_IMAGE}
