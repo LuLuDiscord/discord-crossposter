@@ -2,7 +2,7 @@ name: build
 on:
     push:
         branches:
-            - master
+            - main
         paths:
             # Package
             - src/**
@@ -116,14 +116,14 @@ jobs:
 
             - name: Login to GitHub Container Registry
               uses: docker/login-action@f054a8b539a109f9f41c372932f1ae047eff08c9
-              if: github.ref == 'refs/heads/master'
+              if: github.ref == 'refs/heads/main'
               with:
                   registry: ghcr.io
                   username: ${{ github.actor }}
                   password: ${{ secrets.GITHUB_TOKEN }}
 
             - name: Push Docker Image
-              if: github.ref == 'refs/heads/master'
+              if: github.ref == 'refs/heads/main'
               run: |
                   docker tag ${DOCKER_IMAGE} ghcr.io/${{ github.repository }}/${DOCKER_IMAGE}:latest
                   docker tag ${DOCKER_IMAGE} ghcr.io/${{ github.repository }}/${DOCKER_IMAGE}:${{ github.sha }}
