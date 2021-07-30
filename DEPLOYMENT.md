@@ -50,7 +50,7 @@ cat >~/docker-compose.yaml <<EOL
 version: '3.7'
 services:
     discord-crossposter:
-        image: ghcr.io/discord-crossposter/lulu/discord-crossposter:latest
+        image: ghcr.io/luludiscord/discord-crossposter/lulu/discord-crossposter:latest
         container_name: discord-crossposter
         hostname: discord-crossposter
         restart: always
