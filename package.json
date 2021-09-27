@@ -55,7 +55,7 @@
     "devDependencies": {
         "@types/async-retry": "^1.4.3",
         "@types/jest": "^26.0.13",
-        "@types/node": "^16.0.0",
+        "@types/node": "^16.10.1",
         "@types/source-map-support": "^0.5.4",
         "@typescript-eslint/eslint-plugin": "^4.28.5",
         "@typescript-eslint/parser": "^4.0.1",
