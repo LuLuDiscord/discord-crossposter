@@ -1,7 +1,20 @@
 import { loadConfig } from './loader';
 
 describe('config/activity-roles', () => {
-    it('should load associations', () => {
+    it('should parse a single associations', () => {
+        const key = 'DISCORD_CROSSPOSTER_SERVICE_ACTIVITY_ROLES_ASSOCIATIONS';
+        // guildId1->activityId1@roleId1#roleId2#roleId3$activityId2@roleId1#roleId2,guildId2->activityId1@roleId1#roleId2
+        const value = '00->01@02';
+        const { associations } = loadConfig({ [key]: value });
+
+        // Guild 1
+        expect(associations.has('00')).toBeTruthy();
+        // Activity 1
+        expect(associations.get('00')?.has('01')).toBeTruthy();
+        expect(associations.get('00')?.get('01')?.has('02')).toBeTruthy();
+    });
+
+    it('should parse multiple associations', () => {
         const key = 'DISCORD_CROSSPOSTER_SERVICE_ACTIVITY_ROLES_ASSOCIATIONS';
         // guildId1->activityId1@roleId1#roleId2#roleId3$activityId2@roleId1#roleId2,guildId2->activityId1@roleId1#roleId2
         const value = '00->01@02#03#04$05@06#07,08->09@10#11';
