@@ -3,7 +3,7 @@
 #
 # Config
 #
-ARG NODE_VERSION=14
+ARG NODE_VERSION=16
 
 #
 # Base Images
@@ -23,7 +23,7 @@ RUN --mount=type=cache,id=builder-apk-cache,target=/var/cache/apk ln -vs /var/ca
     make \
     cmake \
     g++ \
-    python \
+    python3 \
     bash \
     jq \
     git
@@ -43,7 +43,9 @@ RUN --mount=type=cache,id=builder-yarn-local-cache,target=/usr/local/share/.cach
     # Delete old dependencies
     --force \
     # Check cache first
-    --prefer-offline
+    --prefer-offline \
+    # Ignore engine check (Discord.js ^16.6.0)
+    --ignore-engines
 COPY ./src ./src
 
 FROM builder_base as common
@@ -86,7 +88,9 @@ RUN --mount=type=cache,id=builder-yarn-local-cache,target=/usr/local/share/.cach
     # Delete old dependencies
     --force \
     # Check cache first
-    --prefer-offline
+    --prefer-offline \
+    # Ignore engine check (Discord.js ^16.6.0)
+    --ignore-engines
 
 FROM runtime_base
 WORKDIR /usr/app

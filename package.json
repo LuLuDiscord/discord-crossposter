@@ -5,7 +5,7 @@
     "main": "build/src/index.js",
     "types": "build/src/index.d.ts",
     "engines": {
-        "node": ">= 14.0.0"
+        "node": ">=16.0.0"
     },
     "repository": {
         "type": "git",
@@ -41,8 +41,7 @@
     "dependencies": {
         "async-retry": "^1.3.1",
         "bufferutil": "^4.0.3",
-        "discord.js": "discordjs/discord.js#985d4d6a438fc9123264f6a1c600f34fccc1825f",
-        "erlpack": "^0.1.3",
+        "discord.js": "^13.2.0",
         "fastify": "^3.19.2",
         "fastify-metrics": "^7.2.3",
         "make-error-cause": "^2.3.0",
