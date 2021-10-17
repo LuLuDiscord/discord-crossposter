@@ -23,7 +23,7 @@ export class ActivityRolesModule extends Module implements IModule {
         this._client.on('presenceUpdate', this._onPresence);
     }
 
-    private async _onPresence(old: Discord.Presence | null, presence: Discord.Presence) {
+    private async _onPresence(old: Discord.Presence | undefined, presence: Discord.Presence) {
         for (const guild of this._client.guilds.cache.values()) {
             await this._processGuild(guild, presence);
             Metrics.PRESENCE_CHANGES.inc({ guild_id: guild.id });
