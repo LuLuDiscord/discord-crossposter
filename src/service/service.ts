@@ -8,7 +8,7 @@ export interface IApplication {
 }
 
 export class Service implements IApplication {
-    private readonly _discord: Discord.IClient;
+    private readonly _discord: Discord.DiscordClient;
     private readonly _metricsServer: MetricsServer.IServer;
 
     public constructor(config: Config.IServiceConfig) {
@@ -17,12 +17,11 @@ export class Service implements IApplication {
             port: config.metricsServer.port,
             trustProxy: config.metricsServer.trustProxy,
         });
-        this._discord = new Discord.Client({
-            crossposter: {
-                channelIds: config.crosspost.channelIds,
-                integrationsOnly: config.crosspost.integrationsOnly,
-            },
-            token: config.discord.token,
+
+        this._discord = new Discord.DiscordClient({ token: config.discord.token });
+        this._discord.addModule(Discord.Modules.CrossposterModule, {
+            channelIds: config.crosspost.channelIds,
+            integrationsOnly: config.crosspost.integrationsOnly,
         });
     }
 
