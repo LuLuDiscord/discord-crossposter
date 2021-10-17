@@ -33,7 +33,7 @@ export class CrossposterModule extends Module implements IModule {
         const isCrosspostable = this.logic.isCrosspostable({
             author: { isBot: message.author.bot },
             channelId: message.channel.id,
-            webhookId: message.webhookID ?? undefined,
+            webhookId: message.webhookId || undefined,
         });
 
         /** If we should cross-post this message */
