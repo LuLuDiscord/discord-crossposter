@@ -31,6 +31,8 @@ export class ActivityRolesModule extends Module implements IModule {
     }
 
     private async _processGuild(guild: Discord.Guild, presence: Discord.Presence): Promise<void> {
+        const guildStr = `guild '${guild.name}' (${guild.id})`;
+
         /**
          * XXX
          * Note (Lewis): Some of this logic can be migrated and abstracted
@@ -43,14 +45,17 @@ export class ActivityRolesModule extends Module implements IModule {
         /* We must know about the user. */
         const user = presence.user;
         if (!user) {
+            console.warn(`Unable to process presence update in ${guildStr} - no user cached.`);
             return;
         }
 
         /* They must be in the guild. */
         const member = guild.members.cache.get(user.id);
         if (!member) {
+            console.warn(`Unable to process presence update in guild ${guildStr} - no member cached.`);
             return;
         }
+        const memberStr = `member ${member.user.tag} (${member.id})`;
 
         const roles = new Set<string>();
         for (const activity of presence.activities.values()) {
@@ -66,10 +71,15 @@ export class ActivityRolesModule extends Module implements IModule {
 
         /* Grant roles if any are specified. */
         if (roles.size) {
+            const roleStr = [...roles.values()].join(', ');
             try {
+                console.warn(`Attempting to grant roles ${roleStr} to ${memberStr} in ${guildStr}.`);
                 await member.roles.add([...roles.values()]);
+                console.warn(`Successfully granted roles ${roleStr} to ${memberStr} in ${guildStr}.`);
             } catch (err) {
-                console.error(err);
+                console.warn(
+                    `An error occured granting roles ${roleStr} to ${memberStr} in ${guildStr}: ${(err as Error).stack}`
+                );
                 return;
             }
 
@@ -81,5 +91,7 @@ export class ActivityRolesModule extends Module implements IModule {
                 });
             }
         }
+
+        console.info(`Successfully processed presence changes for ${memberStr} in ${guildStr}.`);
     }
 }
