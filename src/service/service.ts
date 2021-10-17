@@ -24,7 +24,7 @@ export class Service implements IApplication {
             integrationsOnly: config.crosspost.integrationsOnly,
         });
         this._discord.addModule(Discord.Modules.ActivityRolesModule, {
-            associations: new Map(),
+            associations: config.activityRoles.associations,
         });
     }
 
