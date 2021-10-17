@@ -8,20 +8,20 @@ export interface IMessage {
     channelId: ChannelID;
 }
 
-export interface ICrossposterModule {
+export interface ICrossposterLogic {
     isCrosspostable(message: IMessage): boolean;
 }
 
-export interface ICrossposterOptions {
+export interface ICrossposterLogicOptions {
     channelIds: Iterable<ChannelID>;
     integrationsOnly: boolean;
 }
 
-export class CrossposterModule implements ICrossposterModule {
+export class CrossposterLogic implements ICrossposterLogic {
     protected _channelIds: Set<ChannelID>;
     protected _integrationsOnly: boolean;
 
-    public constructor({ channelIds, integrationsOnly }: ICrossposterOptions) {
+    public constructor({ channelIds, integrationsOnly }: ICrossposterLogicOptions) {
         this._channelIds = new Set(channelIds);
         this._integrationsOnly = integrationsOnly;
     }
