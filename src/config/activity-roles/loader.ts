@@ -46,10 +46,6 @@ function loadAssociations(env: Record<string, string | undefined>): ActivityRole
             const activities = rest.split('$');
             for (const a of activities) {
                 const [activityId, rawRoleIds] = a.split('@');
-                if (!DIGIT_REGEXP.test(activityId)) {
-                    continue;
-                }
-
                 const roleIds = rawRoleIds.split('#');
                 for (const roleId of roleIds) {
                     if (!DIGIT_REGEXP.test(roleId)) {
