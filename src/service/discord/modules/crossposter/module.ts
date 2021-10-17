@@ -3,9 +3,8 @@ import type * as Discord from 'discord.js';
 
 import type { IModule } from '../../module';
 import { Module } from '../../module';
-import type { ICrossposterLogicOptions } from '.';
-import { CrossposterLogic } from '.';
-import type { ICrossposterLogic } from './logic';
+import type { ICrossposterLogic, ICrossposterLogicOptions } from './logic';
+import { CrossposterLogic } from './logic';
 import * as Metrics from './metrics';
 
 export class CrossposterModule extends Module implements IModule {
