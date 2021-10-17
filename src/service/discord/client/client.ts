@@ -19,7 +19,7 @@ export class DiscordClient implements IDiscordClient, IDispose {
     public constructor({ token }: IDiscordClientOptions) {
         this._token = token;
         this._discord = new Discord.Client({
-            intents: ['GUILD_MESSAGES', 'GUILD_WEBHOOKS', 'GUILDS'],
+            intents: ['GUILD_MESSAGES', 'GUILD_WEBHOOKS', 'GUILDS', 'GUILD_PRESENCES', 'GUILD_MEMBERS'],
             presence: { status: 'online' },
             ws: { compress: true },
         });
