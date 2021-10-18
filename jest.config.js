@@ -14,6 +14,7 @@ module.exports = {
     testPathIgnorePatterns: ['<rootDir>/node_modules', '<rootDir>/build', '<rootDir>/coverage'],
     testRegex: '(/__tests__/.*|(\\.|/)(test|spec))\\.[jt]s$',
     transform: {
-        '^.+\\.ts$': 'ts-jest',
+        '^.+\\.(js|jsx)$': 'babel-jest',
+        '^.+\\.(ts|tsx)?$': 'ts-jest',
     },
 };
