@@ -24,7 +24,7 @@ export class CrossposterModule extends Module implements IModule {
         this._client.on('messageCreate', this._onMessage);
     }
 
-    private async _onMessage(message: Discord.Message) {
+    private _onMessage = async (message: Discord.Message) => {
         /** If we don't have permission to cross-post a message */
         if (!message.crosspostable) {
             return;
@@ -33,7 +33,7 @@ export class CrossposterModule extends Module implements IModule {
         const isCrosspostable = this.logic.isCrosspostable({
             author: { isBot: message.author.bot },
             channelId: message.channel.id,
-            webhookId: message.webhookId || undefined,
+            webhookId: message.webhookId ?? undefined,
         });
 
         /** If we should cross-post this message */
@@ -57,5 +57,5 @@ export class CrossposterModule extends Module implements IModule {
                 console.error(`An error occured crossposting: ${(err as Error).stack}`);
             }
         }
-    }
+    };
 }
