@@ -67,7 +67,7 @@ export class ActivityRolesModule extends Module implements IModule {
         /* They must be in the guild. */
         const member = guild.members.cache.get(user.id);
         if (!member) {
-            console.warn(`Unable to process presence update in guild ${guildStr} - no member cached.`);
+            console.warn(`Unable to process presence update in ${guildStr} - no member cached.`);
             return;
         }
         const memberStr = `member ${member.user.tag} (${member.id})`;
