@@ -16,21 +16,36 @@ export class ActivityRolesModule extends Module implements IModule {
     }
 
     public destroy(): void {
+        this._client.off('ready', this._onReady);
         this._client.off('presenceUpdate', this._onPresence);
     }
 
     private _init() {
+        this._client.on('ready', this._onReady);
         this._client.on('presenceUpdate', this._onPresence);
     }
 
-    private async _onPresence(old: Discord.Presence | null, presence: Discord.Presence) {
+    private _onReady = async () => {
         for (const guild of this._client.guilds.cache.values()) {
-            await this._processGuild(guild, presence);
+            for (const member of guild.members.cache.values()) {
+                const presence = member.presence;
+                if (!presence) {
+                    continue;
+                }
+
+                await this._processGuild(guild, presence);
+            }
+        }
+    };
+
+    private _onPresence = async (old: Discord.Presence | null, presence: Discord.Presence) => {
+        for (const guild of this._client.guilds.cache.values()) {
+            await this._processGuild(guild, presence, true);
             Metrics.PRESENCE_CHANGES.inc({ guild_id: guild.id });
         }
-    }
+    };
 
-    private async _processGuild(guild: Discord.Guild, presence: Discord.Presence): Promise<void> {
+    private async _processGuild(guild: Discord.Guild, presence: Discord.Presence, log = false): Promise<void> {
         const guildStr = `guild '${guild.name}' (${guild.id})`;
 
         /**
@@ -59,12 +74,8 @@ export class ActivityRolesModule extends Module implements IModule {
 
         const roles = new Set<string>();
         for (const activity of presence.activities.values()) {
-            if (!activity.applicationId) {
-                continue;
-            }
-
             /* Add any roles to the grant set if any are specified for this activity */
-            for (const roleId of this.logic.getRoles(guild.id, activity.applicationId)) {
+            for (const roleId of this.logic.getRoles(guild.id, activity.id)) {
                 /* Skip if the member has this role already. */
                 if (member.roles.cache.has(roleId)) {
                     continue;
@@ -96,6 +107,8 @@ export class ActivityRolesModule extends Module implements IModule {
             }
         }
 
-        console.info(`Successfully processed presence changes for ${memberStr} in ${guildStr}.`);
+        if (log) {
+            console.info(`Successfully processed presence changes for ${memberStr} in ${guildStr}.`);
+        }
     }
 }
