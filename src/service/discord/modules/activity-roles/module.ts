@@ -34,19 +34,19 @@ export class ActivityRolesModule extends Module implements IModule {
                     continue;
                 }
 
-                await this._processGuild(guild, presence, false);
+                await this._processGuild(guild, presence);
             }
         }
     };
 
     private _onPresence = async (old: Discord.Presence | null, presence: Discord.Presence) => {
         for (const guild of this._client.guilds.cache.values()) {
-            await this._processGuild(guild, presence, true);
+            await this._processGuild(guild, presence);
             Metrics.PRESENCE_CHANGES.inc({ guild_id: guild.id });
         }
     };
 
-    private async _processGuild(guild: Discord.Guild, presence: Discord.Presence, log: boolean): Promise<void> {
+    private async _processGuild(guild: Discord.Guild, presence: Discord.Presence): Promise<void> {
         const guildStr = `guild '${guild.name}' (${guild.id})`;
 
         /**
@@ -61,27 +61,24 @@ export class ActivityRolesModule extends Module implements IModule {
         /* We must know about the user. */
         const user = presence.user;
         if (!user) {
-            // if (log) {
-            //     console.warn(`Unable to process presence update in ${guildStr} - no user cached.`);
-            // }
+            // console.warn(`Unable to process presence update in ${guildStr} - no user cached.`);
             return;
         }
 
         /* They must be in the guild. */
         const member = guild.members.cache.get(user.id);
         if (!member) {
-            // if (log) {
-            //     console.warn(`Unable to process presence update in ${guildStr} - no member cached.`);
-            // }
+            // console.warn(`Unable to process presence update in ${guildStr} - no member cached.`);
             return;
         }
         const memberStr = `member ${member.user.tag} (${member.id})`;
 
         const roles = new Set<string>();
         for (const activity of presence.activities.values()) {
-            console.log(
-                `Activity ${activity.id} (${activity.name}) is being ${activity.type} by ${memberStr} in ${guildStr}.`
-            );
+            if (activity.type !== 'PLAYING') {
+                continue;
+            }
+            console.log(`Activity ${activity.id} (${activity.name}) is being played by ${memberStr} in ${guildStr}.`);
 
             /* Add any roles to the grant set if any are specified for this activity */
             for (const roleId of this.logic.getRoles(guild.id, activity.id)) {
@@ -116,8 +113,6 @@ export class ActivityRolesModule extends Module implements IModule {
             }
         }
 
-        if (log) {
-            console.info(`Successfully processed presence changes for ${memberStr} in ${guildStr}.`);
-        }
+        // console.info(`Successfully processed presence changes for ${memberStr} in ${guildStr}.`);
     }
 }
