@@ -22,10 +22,11 @@ export class ActivityRolesModule extends Module implements IModule {
 
     private _init() {
         this._client.on('ready', this._onReady);
-        this._client.on('presenceUpdate', this._onPresence);
     }
 
     private _onReady = async () => {
+        this._client.on('presenceUpdate', this._onPresence);
+
         for (const guild of this._client.guilds.cache.values()) {
             for (const member of guild.members.cache.values()) {
                 const presence = member.presence;
@@ -33,7 +34,7 @@ export class ActivityRolesModule extends Module implements IModule {
                     continue;
                 }
 
-                await this._processGuild(guild, presence);
+                await this._processGuild(guild, presence, false);
             }
         }
     };
@@ -45,7 +46,7 @@ export class ActivityRolesModule extends Module implements IModule {
         }
     };
 
-    private async _processGuild(guild: Discord.Guild, presence: Discord.Presence, log = false): Promise<void> {
+    private async _processGuild(guild: Discord.Guild, presence: Discord.Presence, log: boolean): Promise<void> {
         const guildStr = `guild '${guild.name}' (${guild.id})`;
 
         /**
@@ -60,14 +61,18 @@ export class ActivityRolesModule extends Module implements IModule {
         /* We must know about the user. */
         const user = presence.user;
         if (!user) {
-            console.warn(`Unable to process presence update in ${guildStr} - no user cached.`);
+            if (log) {
+                console.warn(`Unable to process presence update in ${guildStr} - no user cached.`);
+            }
             return;
         }
 
         /* They must be in the guild. */
         const member = guild.members.cache.get(user.id);
         if (!member) {
-            console.warn(`Unable to process presence update in ${guildStr} - no member cached.`);
+            if (log) {
+                console.warn(`Unable to process presence update in ${guildStr} - no member cached.`);
+            }
             return;
         }
         const memberStr = `member ${member.user.tag} (${member.id})`;
