@@ -23,6 +23,9 @@ export class Service implements IApplication {
             channelIds: config.crosspost.channelIds,
             integrationsOnly: config.crosspost.integrationsOnly,
         });
+        this._discord.addModule(Discord.Modules.ActivityRolesModule, {
+            associations: config.activityRoles.associations,
+        });
     }
 
     public async start() {

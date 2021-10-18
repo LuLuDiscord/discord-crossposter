@@ -3,9 +3,8 @@ import type * as Discord from 'discord.js';
 
 import type { IModule } from '../../module';
 import { Module } from '../../module';
-import type { ICrossposterLogicOptions } from '.';
-import { CrossposterLogic } from '.';
-import type { ICrossposterLogic } from './logic';
+import type { ICrossposterLogic, ICrossposterLogicOptions } from './logic';
+import { CrossposterLogic } from './logic';
 import * as Metrics from './metrics';
 
 export class CrossposterModule extends Module implements IModule {
@@ -18,11 +17,11 @@ export class CrossposterModule extends Module implements IModule {
     }
 
     public destroy(): void {
-        this._client.off('message', this._onMessage);
+        this._client.off('messageCreate', this._onMessage);
     }
 
     private _init() {
-        this._client.on('message', this._onMessage);
+        this._client.on('messageCreate', this._onMessage);
     }
 
     private async _onMessage(message: Discord.Message) {
@@ -34,7 +33,7 @@ export class CrossposterModule extends Module implements IModule {
         const isCrosspostable = this.logic.isCrosspostable({
             author: { isBot: message.author.bot },
             channelId: message.channel.id,
-            webhookId: message.webhookID ?? undefined,
+            webhookId: message.webhookId || undefined,
         });
 
         /** If we should cross-post this message */
