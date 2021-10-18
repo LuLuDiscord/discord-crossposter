@@ -74,6 +74,10 @@ export class ActivityRolesModule extends Module implements IModule {
 
         const roles = new Set<string>();
         for (const activity of presence.activities.values()) {
+            console.log(
+                `Activity ${activity.id} (${activity.name}) is being ${activity.type} by ${memberStr} in ${guildStr}.`
+            );
+
             /* Add any roles to the grant set if any are specified for this activity */
             for (const roleId of this.logic.getRoles(guild.id, activity.id)) {
                 /* Skip if the member has this role already. */
