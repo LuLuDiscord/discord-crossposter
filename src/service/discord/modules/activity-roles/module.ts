@@ -78,7 +78,7 @@ export class ActivityRolesModule extends Module implements IModule {
             if (activity.type !== 'PLAYING') {
                 continue;
             }
-            console.log(`Activity ${activity.id} (${activity.name}) is being played by ${memberStr} in ${guildStr}.`);
+            console.log(`Activity '${activity.name}' is being played by ${memberStr} in ${guildStr}.`);
 
             /* Add any roles to the grant set if any are specified for this activity */
             for (const roleId of this.logic.getRoles(guild.id, activity.name)) {
