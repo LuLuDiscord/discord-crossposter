@@ -73,7 +73,7 @@ export class ActivityRolesModule extends Module implements IModule {
         }
         const memberStr = `member ${member.user.tag} (${member.id})`;
 
-        const roles = new Set<string>();
+        const roles = new Map<string, Discord.Activity>();
         for (const activity of presence.activities.values()) {
             if (activity.type !== 'PLAYING') {
                 continue;
@@ -81,21 +81,24 @@ export class ActivityRolesModule extends Module implements IModule {
             console.log(`Activity ${activity.id} (${activity.name}) is being played by ${memberStr} in ${guildStr}.`);
 
             /* Add any roles to the grant set if any are specified for this activity */
-            for (const roleId of this.logic.getRoles(guild.id, activity.id)) {
+            for (const roleId of this.logic.getRoles(guild.id, activity.name)) {
                 /* Skip if the member has this role already. */
                 if (member.roles.cache.has(roleId)) {
                     continue;
                 }
-                roles.add(roleId);
+                if (roles.has(roleId)) {
+                    continue;
+                }
+                roles.set(roleId, activity);
             }
         }
 
         /* Grant roles if any are specified. */
         if (roles.size) {
-            const roleStr = [...roles.values()].join(', ');
+            const roleStr = [...roles.keys()].join(', ');
             try {
                 console.warn(`Attempting to grant roles ${roleStr} to ${memberStr} in ${guildStr}.`);
-                await member.roles.add([...roles.values()]);
+                await member.roles.add([...roles.keys()]);
                 console.warn(`Successfully granted roles ${roleStr} to ${memberStr} in ${guildStr}.`);
             } catch (err) {
                 console.warn(
@@ -105,8 +108,9 @@ export class ActivityRolesModule extends Module implements IModule {
             }
 
             /* Increment metrics. */
-            for (const roleId of roles.values()) {
+            for (const [roleId, activity] of roles.entries()) {
                 Metrics.ROLES_ISSUED.inc({
+                    activity_name: activity.name,
                     guild_id: guild.id,
                     role_id: roleId,
                 });
