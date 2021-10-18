@@ -15,7 +15,7 @@ function loadAssociations(env: Record<string, string | undefined>): ActivityRole
     /**
      * Assuming the format is like:
      *
-     * guildId1->activityId1@roleId1#roleId2#roleId3$activityId2@roleId1#roleId2,guildId2->activityId1@roleId1#roleId2
+     * guildId1->game name 1@roleId1#roleId2#roleId3$game name 2@roleId1#roleId2,guildId2->game name 3@roleId1#roleId2
      */
     const raw = env.DISCORD_CROSSPOSTER_SERVICE_ACTIVITY_ROLES_ASSOCIATIONS;
     if (raw) {
