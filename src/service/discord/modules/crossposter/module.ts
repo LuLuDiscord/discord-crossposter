@@ -17,11 +17,11 @@ export class CrossposterModule extends Module implements IModule {
     }
 
     public destroy(): void {
-        this._client.off('message', this._onMessage);
+        this._client.off('messageCreate', this._onMessage);
     }
 
     private _init() {
-        this._client.on('message', this._onMessage);
+        this._client.on('messageCreate', this._onMessage);
     }
 
     private async _onMessage(message: Discord.Message) {
