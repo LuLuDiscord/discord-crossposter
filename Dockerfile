@@ -65,7 +65,7 @@ ENV GIT_COMMIT_TITLE $GIT_COMMIT_TITLE
 # Copy Common
 COPY --from=common /usr/app ./
 # Linting
-COPY .eslintrc.js .eslintignore tsconfig.eslint.json tsconfig.json ./
+COPY .eslintrc.js .eslintignore tsconfig.eslint.json tsconfig.json jest.config.js ./
 COPY ./eslint ./eslint
 COPY ./scripts ./scripts
 CMD echo "override me!"
