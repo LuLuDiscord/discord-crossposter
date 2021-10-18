@@ -8,6 +8,6 @@ export const PRESENCE_CHANGES = new PromClient.Counter({
 
 export const ROLES_ISSUED = new PromClient.Counter({
     help: 'A counter for how many Discord roles have been granted for activity-role associations.',
-    labelNames: ['guild_id', 'role_id'],
+    labelNames: ['guild_id', 'role_id', 'activity_name'],
     name: 'discord_activity_roles_issued',
 });
