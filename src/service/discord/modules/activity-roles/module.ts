@@ -28,25 +28,45 @@ export class ActivityRolesModule extends Module implements IModule {
         this._client.on('presenceUpdate', this._onPresence);
 
         for (const guild of this._client.guilds.cache.values()) {
+            let roles: Discord.Collection<string, Discord.Role> | undefined;
+            try {
+                roles = await guild.roles.fetch(undefined, { cache: true });
+            } catch (err) {
+                const guildStr = `guild '${guild.name}' (${guild.id})`;
+                console.error(`Error fetching roles for ${guildStr}: ${(err as Error).stack}`);
+            }
+
             for (const member of guild.members.cache.values()) {
                 const presence = member.presence;
                 if (!presence) {
                     continue;
                 }
 
-                await this._processGuild(guild, presence);
+                await this._processGuild(guild, roles, presence);
             }
         }
     };
 
     private _onPresence = async (old: Discord.Presence | null, presence: Discord.Presence) => {
         for (const guild of this._client.guilds.cache.values()) {
-            await this._processGuild(guild, presence);
+            let roles: Discord.Collection<string, Discord.Role> | undefined;
+            try {
+                roles = await guild.roles.fetch(undefined, { cache: true });
+            } catch (err) {
+                const guildStr = `guild '${guild.name}' (${guild.id})`;
+                console.error(`Error fetching roles for ${guildStr}: ${(err as Error).stack}`);
+            }
+
+            await this._processGuild(guild, roles, presence);
             Metrics.PRESENCE_CHANGES.inc({ guild_id: guild.id });
         }
     };
 
-    private async _processGuild(guild: Discord.Guild, presence: Discord.Presence): Promise<void> {
+    private async _processGuild(
+        guild: Discord.Guild,
+        roles: Discord.Collection<string, Discord.Role> | undefined,
+        presence: Discord.Presence
+    ): Promise<void> {
         const guildStr = `guild '${guild.name}' (${guild.id})`;
 
         /**
@@ -73,7 +93,7 @@ export class ActivityRolesModule extends Module implements IModule {
         }
         const memberStr = `member ${member.user.tag} (${member.id})`;
 
-        const roles = new Map<string, Discord.Activity>();
+        const rolesToAdd = new Map<string, Discord.Activity>();
         for (const activity of presence.activities.values()) {
             if (activity.type !== 'PLAYING') {
                 continue;
@@ -86,19 +106,30 @@ export class ActivityRolesModule extends Module implements IModule {
                 if (member.roles.cache.has(roleId)) {
                     continue;
                 }
-                if (roles.has(roleId)) {
+                if (rolesToAdd.has(roleId)) {
                     continue;
                 }
-                roles.set(roleId, activity);
+                rolesToAdd.set(roleId, activity);
             }
         }
 
         /* Grant roles if any are specified. */
-        if (roles.size) {
-            const roleStr = [...roles.keys()].join(', ');
+        if (rolesToAdd.size) {
+            const roleStr = [...rolesToAdd.keys()]
+                .map((roleId) => {
+                    if (roles) {
+                        const role = roles.get(roleId);
+                        if (role) {
+                            return `'${role.name}' (${role.id})`;
+                        }
+                    }
+                    return roleId.toString();
+                })
+                .join(', ');
+
             try {
                 console.warn(`Attempting to grant roles ${roleStr} to ${memberStr} in ${guildStr}.`);
-                await member.roles.add([...roles.keys()]);
+                await member.roles.add([...rolesToAdd.keys()]);
                 console.warn(`Successfully granted roles ${roleStr} to ${memberStr} in ${guildStr}.`);
             } catch (err) {
                 console.warn(
@@ -108,7 +139,7 @@ export class ActivityRolesModule extends Module implements IModule {
             }
 
             /* Increment metrics. */
-            for (const [roleId, activity] of roles.entries()) {
+            for (const [roleId, activity] of rolesToAdd.entries()) {
                 Metrics.ROLES_ISSUED.inc({
                     activity_name: activity.name,
                     guild_id: guild.id,
