@@ -98,7 +98,6 @@ export class ActivityRolesModule extends Module implements IModule {
             if (activity.type !== 'PLAYING') {
                 continue;
             }
-            console.log(`Activity '${activity.name}' is being played by ${memberStr} in ${guildStr}.`);
 
             /* Add any roles to the grant set if any are specified for this activity */
             for (const roleId of this.logic.getRoles(guild.id, activity.name)) {
@@ -110,26 +109,32 @@ export class ActivityRolesModule extends Module implements IModule {
                     continue;
                 }
                 rolesToAdd.set(roleId, activity);
+                if (rolesToAdd.size === 1) {
+                    console.log(`Activity '${activity.name}' is being played by ${memberStr} in ${guildStr}.`);
+                }
             }
         }
 
         /* Grant roles if any are specified. */
         if (rolesToAdd.size) {
-            const roleStr = [...rolesToAdd.keys()]
-                .map((roleId) => {
+            const roleIdsToAdd = [...rolesToAdd.keys()];
+            const roleStr = [...rolesToAdd.entries()]
+                .map(([roleId, activity]) => {
+                    let name = 'N/A';
                     if (roles) {
                         const role = roles.get(roleId);
                         if (role) {
-                            return `'${role.name}' (${role.id})`;
+                            name = role.name;
                         }
                     }
-                    return roleId.toString();
+                    return `'${name}' (${roleId}) [${activity.name}]`;
                 })
                 .join(', ');
 
             try {
                 console.warn(`Attempting to grant roles ${roleStr} to ${memberStr} in ${guildStr}.`);
-                await member.roles.add([...rolesToAdd.keys()]);
+                await member.fetch(false);
+                await member.roles.add(roleIdsToAdd);
                 console.warn(`Successfully granted roles ${roleStr} to ${memberStr} in ${guildStr}.`);
             } catch (err) {
                 console.warn(
