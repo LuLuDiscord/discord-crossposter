@@ -57,7 +57,7 @@
         "@types/node": "^16.11.1",
         "@types/source-map-support": "^0.5.4",
         "@typescript-eslint/eslint-plugin": "^5.1.0",
-        "@typescript-eslint/parser": "^5.0.0",
+        "@typescript-eslint/parser": "^5.47.1",
         "cspell": "^5.12.3",
         "dotenv": "^10.0.0",
         "dotenv-expand": "^5.1.0",
